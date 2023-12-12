@@ -1,0 +1,98 @@
+import RPi.GPIO as GPIO
+import time
+GPIO.setmode(GPIO.BOARD)
+GPIO.setwarnings(False)
+GPIO_TRIGGER=16
+
+GPIO_ECHO=18
+r1=38
+r2=40
+l1=35
+l2=37
+left_ir=11
+right_ir=13
+side_ir=15
+middel_ir=16
+GPIO.setup(r1,GPIO.OUT)
+GPIO.setup(r2,GPIO.OUT)
+GPIO.setup(l1,GPIO.OUT)
+GPIO.setup(l2,GPIO.OUT)
+GPIO.setup(left_ir,GPIO.IN)
+GPIO.setup(right_ir,GPIO.IN)
+GPIO.setup(middel_ir,GPIO.IN)
+GPIO.setup(side_ir,GPIO.IN)
+GPIO.setup(GPIO_ECHO,GPIO.IN)
+GPIO.setup(GPIO_TRIGGER,GPIO.OUT)
+count=0
+def stop():
+    GPIO.output(r1,GPIO.LOW)
+    GPIO.output(r2,GPIO.LOW)
+    GPIO.output(l1,GPIO.LOW)
+    GPIO.output(l2,GPIO.LOW)
+def forward():
+    GPIO.output(r1,GPIO.HIGH)
+    GPIO.output(r1,GPIO.LOW)
+    GPIO.output(l1,GPIO.HIGH)
+    GPIO.output(l2,GPIO.LOW)
+def left():
+    GPIO.output(r1,GPIO.LOW)
+    GPIO.output(r2,GPIO.LOW)
+    GPIO.output(l1,GPIO.HIGH)
+    GPIO.output(l2,GPIO.LOW)
+def right():
+    GPIO.output(r1,GPIO.HIGH)
+    GPIO.output(r2,GPIO.LOW)
+    GPIO.output(l1,GPIO.LOW)
+    GPIO.output(l2,GPIO.LOW)
+def stop_at_delivery():
+    GPIO.output(r1,GPIO.LOW)
+    GPIO.output(r2,GPIO.LOW)
+    GPIO.output(l1,GPIO.LOW)
+    GPIO.output(l2,GPIO.LOW)
+    while (GPIO.input(middle_ir)==1):
+        continue
+    time.sleep(2)
+def stop_kitchen():
+    GPIO.output(r1,GPIO.LOW)
+    GPIO.output(r2,GPIO.LOW)
+    GPIO.output(l1,GPIO.LOW)
+    GPIO.output(l2,GPIO.LOW)
+    val=input("enter the table number")
+    
+    
+    
+def distance():
+    GPIO.output(GPIO_TRIGGER, True)
+    time.sleep(0.00001)
+    GPIO.output(GPIO_TRIGGER, False)
+    StartTime = time.time()
+    StopTime = time.time()
+    while GPIO.input(GPIO_ECHO) == 0:
+        StartTime = time.time()
+    while GPIO.input(GPIO_ECHO) == 1:
+        StopTime = time.time()
+    TimeElapsed = StopTime - StartTime
+    distance = (TimeElapsed * 34300) / 2
+    return distance
+    
+    
+val=1  
+while(1):
+    dist=distance()
+    if dist<10:
+        while dist<10:
+            stop()
+            dist=distance()
+    if GPIO.input(side_ir)==1:
+        count=count+1
+    if val== count:
+        stop_at_delivery()
+    
+    if GPIO.input(left_ir)==1 and GPIO.input(right_ir)==0:
+        forward()
+    if GPIO.input(left_ir)==1 and GPIO.input(right_ir)==0:
+        right()
+    if GPIO.input(left_ir)==0 and GPIO.input(right_ir)==1:
+        left()
+    if GPIO.input(left_ir)==1 and GPIO.input(right_ir)==1:
+        stop_kitchen()
